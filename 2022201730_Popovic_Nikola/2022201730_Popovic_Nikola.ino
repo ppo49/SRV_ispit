@@ -13,9 +13,6 @@ const int LED_2      = 10;
 const int LED_3      = 11;
 const int LED_4      = 12;
 
-
-
-// State Machine
 enum GameState {
   STATE_GENERATE,
   STATE_SHOW,
@@ -25,7 +22,6 @@ enum GameState {
   STATE_GAME_OVER
 };
 
-// Globalne promenljive
 const int MAX_LEVEL = 100;
 const int MAX_TRIES = 3;
 int sequence[MAX_LEVEL];
@@ -61,13 +57,6 @@ void timer_wait(unsigned int ms) {
   timer_ms_remaining = ms - 1;
   while (!timer_fired);
 }
-
-// ─── External Interrupts ──────────────────────────────────────────────
-// Pins 2 and 3 support INT0 and INT1 on Arduino Uno — your taster_1 & taster_2
-// Pins 4 and 5 do NOT support hardware external interrupts on Uno,
-// so taster_3 & taster_4 use Pin-Change Interrupt (PCINT19, PCINT21 = PORTD)
-
-
 
 ISR(INT0_vect) { if (button_pressed == -1) button_pressed = LED_1; } // pin 2
 ISR(INT1_vect) { if (button_pressed == -1) button_pressed = LED_2; } // pin 3
@@ -107,7 +96,6 @@ void blink_red(int times) {
   }
 }
 
-// Game Functions
 void generate_sequence() {
   randomSeed(millis());
   int led_map[4] = {LED_1, LED_2, LED_3, LED_4};
@@ -137,7 +125,6 @@ int wait_for_button() {
   return pressed;
 }
 
-// Setup
 void setup() {
   pinMode(taster_1, INPUT_PULLUP);
   pinMode(taster_2, INPUT_PULLUP);
@@ -158,7 +145,6 @@ void setup() {
   state = STATE_GENERATE;
 }
 
-// Main
 void loop() {
   switch (state) {
 
@@ -177,7 +163,7 @@ void loop() {
       break;
 
     case STATE_INPUT: {
-      digitalWrite(LED_y, HIGH);  // yellow ON during input
+      digitalWrite(LED_y, HIGH);  
 
       int pressed = wait_for_button();
 
@@ -191,7 +177,6 @@ void loop() {
           digitalWrite(LED_y, LOW);
           state = STATE_SUCCESS;
         }
-        // else stay in STATE_INPUT for next element
       } else {
         digitalWrite(LED_y, LOW);
         state = STATE_WRONG;
@@ -203,7 +188,6 @@ void loop() {
       tries = 0;
       all_leds_off();
 
-      // Flash success LED + all 4 game LEDs for 1 second
       digitalWrite(LED_succes, HIGH);
       digitalWrite(LED_1, HIGH);
       digitalWrite(LED_2, HIGH);
@@ -220,21 +204,21 @@ void loop() {
 
     case STATE_WRONG:
       tries++;
-      blink_red(tries);  // 1 blink = 1st mistake, 2 = 2nd, 3 = 3rd
+      blink_red(tries); 
 
       if (tries >= MAX_TRIES) {
         state = STATE_GAME_OVER;
       } else {
         input_index = 0;
-        state = STATE_SHOW;  // let player try again
+        state = STATE_SHOW;
       }
       break;
 
     case STATE_GAME_OVER:
       all_leds_off();
-      digitalWrite(LED_r, HIGH);  // solid red
+      digitalWrite(LED_r, HIGH);  
 
-      wait_for_button();          // any press restarts
+      wait_for_button();          
 
       digitalWrite(LED_r, LOW);
       state = STATE_GENERATE;
